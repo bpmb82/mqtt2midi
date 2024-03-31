@@ -4,4 +4,4 @@ port = 1883
 topic = "midi/#"
 
 [midi]
-port = "Client-128:Virtual RawMIDI 128:0"
+port = "MIDI"

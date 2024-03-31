@@ -107,7 +107,7 @@ async fn daemon_mode() {
     };
     println!("MIDI port connected");
     let mut mqttoptions = MqttOptions::new("mqtt2midi", config.mqtt.host, config.mqtt.port as u16);
-    mqttoptions.set_keep_alive(Duration::from_secs(5));
+    mqttoptions.set_keep_alive(Duration::from_secs(2));
 
     let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     client.subscribe(&config.mqtt.topic, QoS::AtMostOnce).await.unwrap();
@@ -119,7 +119,7 @@ async fn daemon_mode() {
 
     loop {
         let notification = eventloop.poll().await;
-        if let Event::Incoming(Packet::Publish(event)) = notification.unwrap() {
+        if let Ok(Event::Incoming(Packet::Publish(event))) = notification {
             let topic = String::from(&event.topic);
             if let Some((_path, mut actual_topic)) = topic.split_once('/') {
                 let channel: i32 = actual_topic.parse().expect("Could not parse topic!");
@@ -127,6 +127,8 @@ async fn daemon_mode() {
                 play_midi(channel as u8, payload.control as u8, payload.value as u8);
                 println!("CH {} | CC {} | VAL {}", channel as u8, payload.control as u8, payload.value as u8);
             }
+        } else {
+            continue;
         }
     }
 }
