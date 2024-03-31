@@ -30,4 +30,4 @@ _*For Windows, install LoopMIDI to get a working virtual port_
 ## Todo's
 
 * Support authentication on the MQTT broker
-* Take topic name as channel so we can have dedicated topics per channel
+* ~~Take topic name as channel so we can have dedicated topics per channel~~
