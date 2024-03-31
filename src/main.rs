@@ -1,16 +1,12 @@
-use clap::builder::Str;
 use toml;
-use serde::{Deserialize};
+use serde::Deserialize;
 use std::fs;
 use clap::Parser;
 use tokio;
-use std::error::Error;
-use std::io::{stdin, stdout, Write};
-use std::thread::sleep;
-use std::time::Duration;
+use tokio::time::Duration;
 
-use midir::{MidiInputPort, MidiOutput, MidiOutputPort};
-use rumqttc::{AsyncClient, Event, MqttOptions, Publish, Packet, QoS};
+use midir::{MidiOutput, MidiOutputPort};
+use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -45,7 +41,6 @@ struct Midi {
 
 #[derive(Deserialize)]
 struct MidiMessage {
-    channel: i32,
     control: i32,
     value: i32
 }
@@ -107,11 +102,11 @@ async fn daemon_mode() {
         println!("ERROR: could not open MIDI port {}", config.midi.port);
         std::process::exit(0x0100);
     };
-    println!("MIDI port connected");
+    println!("MIDI port connected: {}", config.midi.port);
     let mut mqttoptions = MqttOptions::new("mqtt2midi", config.mqtt.host, config.mqtt.port as u16);
-    mqttoptions.set_keep_alive(Duration::from_secs(5));
+    mqttoptions.set_keep_alive(Duration::from_secs(2));
 
-    let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
+    let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     client.subscribe(&config.mqtt.topic, QoS::AtMostOnce).await.unwrap();
     println!("MQTT connected and listening on topic '{}'", config.mqtt.topic);
 
@@ -122,9 +117,15 @@ async fn daemon_mode() {
     loop {
         let notification = eventloop.poll().await;
         if let Event::Incoming(Packet::Publish(event)) = notification.unwrap() {
-            let payload: MidiMessage = serde_json::from_slice(&event.payload).unwrap();
-            play_midi(payload.channel as u8, payload.control as u8, payload.value as u8);
-            println!("CH {} | CC {} | VAL {}", payload.channel as u8, payload.control as u8, payload.value as u8);
+            let topic = String::from(&event.topic);
+            if let Some((_path, actual_topic)) = topic.split_once('/') {
+                let channel: i32 = actual_topic.parse().expect("Could not parse topic!");
+                let payload: MidiMessage = serde_json::from_slice(&event.payload).unwrap();
+                play_midi(channel as u8, payload.control as u8, payload.value as u8);
+                println!("CH {} | CC {} | VAL {}", channel as u8, payload.control as u8, payload.value as u8);
+            }
+        } else {
+            continue;
         }
     }
 }
