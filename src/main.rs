@@ -4,7 +4,6 @@ use serde::{Deserialize};
 use std::fs;
 use clap::Parser;
 use tokio;
-use std::error::Error;
 use std::io::{stdin, stdout, Write};
 use std::thread::sleep;
 use std::time::Duration;
@@ -122,9 +121,13 @@ async fn daemon_mode() {
     loop {
         let notification = eventloop.poll().await;
         if let Event::Incoming(Packet::Publish(event)) = notification.unwrap() {
-            let payload: MidiMessage = serde_json::from_slice(&event.payload).unwrap();
-            play_midi(payload.channel as u8, payload.control as u8, payload.value as u8);
-            println!("CH {} | CC {} | VAL {}", payload.channel as u8, payload.control as u8, payload.value as u8);
+            let topic = String::from(&event.topic);
+            if let Some((_path, mut actual_topic)) = topic.split_once('/') {
+                let channel: i32 = actual_topic.parse().expect("Could not parse topic!");
+                let payload: MidiMessage = serde_json::from_slice(&event.payload).unwrap();
+                play_midi(channel as u8, payload.control as u8, payload.value as u8);
+                println!("CH {} | CC {} | VAL {}", payload.channel as u8, payload.control as u8, payload.value as u8);
+            }
         }
     }
 }
