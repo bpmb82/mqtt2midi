@@ -44,7 +44,6 @@ struct Midi {
 
 #[derive(Deserialize)]
 struct MidiMessage {
-    channel: i32,
     control: i32,
     value: i32
 }
@@ -126,7 +125,7 @@ async fn daemon_mode() {
                 let channel: i32 = actual_topic.parse().expect("Could not parse topic!");
                 let payload: MidiMessage = serde_json::from_slice(&event.payload).unwrap();
                 play_midi(channel as u8, payload.control as u8, payload.value as u8);
-                println!("CH {} | CC {} | VAL {}", payload.channel as u8, payload.control as u8, payload.value as u8);
+                println!("CH {} | CC {} | VAL {}", channel as u8, payload.control as u8, payload.value as u8);
             }
         }
     }
