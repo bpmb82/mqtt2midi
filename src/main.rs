@@ -141,6 +141,26 @@ async fn daemon_mode() {
                 play_midi(channel as u8, control as u8, value as u8);
                 println!("CH {} | CC {} | VAL {}", channel, control, value);
             }
+            if topic.split("/").count() == 2 as usize {
+                let Some(channel) = topic.split("/").nth(topic.split("/").count() -1) else {
+                    println!("Could not get 'channel' from topic");
+                    continue;
+                };
+                let Ok(channel) = channel.parse::<i32>() else {
+                    println!("Could not parse channel!");
+                    continue;
+                };
+                let Ok(value) = String::from_utf8(event.payload.to_ascii_lowercase()) else {
+                    println!("Could not parse payload value");
+                    continue;
+                };
+                let Ok(value) = value.parse::<i32>() else {
+                    println!("Could not parse payload value");
+                    continue;
+                };
+                play_midi(channel as u8, value as u8, value as u8);
+                println!("CH {} | PC {}", channel, &value);
+            }
         }
     }
 }
