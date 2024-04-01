@@ -39,12 +39,6 @@ struct Midi {
     port: String
 }
 
-#[derive(Deserialize)]
-struct MidiMessage {
-    control: i32,
-    value: i32
-}
-
 fn get_config_from_toml() -> Config {
     let Ok(toml_str) = fs::read_to_string("config.toml") else {
         println!("ERROR: could not read config.toml file, this file needs to exist next to the executable.");
@@ -118,14 +112,35 @@ async fn daemon_mode() {
         let notification = eventloop.poll().await;
         if let Event::Incoming(Packet::Publish(event)) = notification.unwrap() {
             let topic = String::from(&event.topic);
-            if let Some((_path, actual_topic)) = topic.split_once('/') {
-                let channel: i32 = actual_topic.parse().expect("Could not parse topic!");
-                let payload: MidiMessage = serde_json::from_slice(&event.payload).unwrap();
-                play_midi(channel as u8, payload.control as u8, payload.value as u8);
-                println!("CH {} | CC {} | VAL {}", channel as u8, payload.control as u8, payload.value as u8);
+            if topic.split("/").count() >= 3 as usize {
+                let Some(control) = topic.split("/").nth(topic.split("/").count() -1) else {
+                    println!("Could not get 'control' from topic");
+                    continue;
+                };
+                let Some(channel) = topic.split("/").nth(topic.split("/").count() -2) else {
+                    println!("Could not get 'channel' from topic");
+                    continue;
+                };
+                let Ok(control) = control.parse::<i32>() else {
+                    println!("Could not parse control!");
+                    continue;
+                };
+                let Ok(channel) = channel.parse::<i32>() else {
+                    println!("Could not parse channel!");
+                    continue;
+                };
+                let Ok(value) = String::from_utf8(event.payload.to_ascii_lowercase()) else {
+                    println!("Could not parse payload value");
+                    continue;
+                };
+                let Ok(value) = value.parse::<i32>() else {
+                    println!("Could not parse payload value");
+                    continue;
+                };
+                //let payload = serde_json::from_slice(&event.payload);
+                play_midi(channel as u8, control as u8, value as u8);
+                println!("CH {} | CC {} | VAL {}", channel, control, value);
             }
-        } else {
-            continue;
         }
     }
 }
