@@ -29,14 +29,8 @@ _*For Windows, install LoopMIDI to get a working virtual port_
 
 ## Daemon mode
 
-In daemon mode, the application takes the last part of the topic name as the MIDI channel to use (e.g. midi/176 would become 176 which is CH1 MIDI CC). The topic itself must contain a payload in json that holds the 'control' and the 'value':
+In daemon mode, the application takes the last 2 parts of the topic name as the MIDI channel and control number to use (e.g. topic 'midi/176/10' would become 'channel' 176 which is CH1 MIDI CC with 'control' number 10). The topic itself must contain a payload in raw that holds the value as integer (value between 0-127):
 
-```
-{
-    "control": 10,
-    "value": 127
-}
-```
 You can find a list of MIDI channels here: https://midi.org/expanded-midi-1-0-messages-list
 
 
