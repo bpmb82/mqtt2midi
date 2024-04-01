@@ -6,10 +6,13 @@ then
     exit 1
 fi
 
-for value in {0..127}
+for i in {0..10}
 do
-  for control in {10..30}
-  do
-    mosquitto_pub -h 192.168.1.250 -p 1883 -t midi/176/$control -m $value && sleep 0.4 &
-  done
+    for value in {0..127}
+    do
+        for control in {10..29}
+        do
+            mosquitto_pub -h 192.168.1.250 -p 1883 -t midi/176/$control -m $value && sleep 0.1 &
+        done
+    done
 done
