@@ -161,9 +161,6 @@ async fn daemon_mode() {
                 play_midi(channel as u8, value as u8, value as u8);
                 println!("CH {} | PC {}", channel, &value);
             }
-        } else {
-            println!("Could not unwrap the MQTT notification, ignoring..");
-            continue;
         }
     }
 }
