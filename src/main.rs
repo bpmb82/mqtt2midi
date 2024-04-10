@@ -42,11 +42,11 @@ struct Midi {
 
 fn get_config_from_toml() -> Config {
     let Ok(toml_str) = fs::read_to_string("config.toml") else {
-        println!("ERROR: could not read config.toml file, this file needs to exist next to the executable.");
+        eprintln!("ERROR: could not read config.toml file, this file needs to exist next to the executable.");
         std::process::exit(0x0100);
     };
     let Ok(config) = toml::from_str(&toml_str) else {
-        println!("ERROR: could not parse config.toml file.
+        eprintln!("ERROR: could not parse config.toml file.
         
     Example config.toml:
 
@@ -67,7 +67,7 @@ fn list_midi_ports() {
     };
     let out_ports = midi_out.ports();
     if out_ports.len() == 0 {
-        eprintln!("No MIDI output ports found!");
+        eprintln!("ERROR: No MIDI output ports found!");
         std::process::exit(0x0100);
     };
     println!("\nAvailable output ports:");
@@ -82,7 +82,7 @@ async fn daemon_mode() {
     let config = get_config_from_toml();
     println!("Config file found and loaded");
     let Ok(midi_out) = MidiOutput::new("mqtt2midi") else {
-        println!("ERROR: could not query MIDI devices");
+        eprintln!("ERROR: could not query MIDI devices");
         std::process::exit(0x0100);
     };
     let midiports = midi_out.ports();
@@ -93,7 +93,7 @@ async fn daemon_mode() {
         }
     }
     let Ok(mut conn_out) = midi_out.connect(midiport, "mqtt2midi") else {
-        println!("ERROR: could not open MIDI port {}", config.midi.port);
+        eprintln!("ERROR: could not open MIDI port {}", config.midi.port);
         std::process::exit(0x0100);
     };
     println!("MIDI port connected: {}", config.midi.port);
@@ -102,7 +102,7 @@ async fn daemon_mode() {
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     let Ok(_) = client.subscribe(&config.mqtt.topic, QoS::AtMostOnce).await else {
-        println!("ERROR: unable to subscribe to topic {}", &config.mqtt.topic);
+        eprintln!("ERROR: unable to subscribe to topic {}", &config.mqtt.topic);
         std::process::exit(0x0100);
     };
     println!("MQTT connected and listening on topic '{}'", config.mqtt.topic);
@@ -117,27 +117,27 @@ async fn daemon_mode() {
             let topic = String::from(&event.topic);
             if topic.split("/").count() >= 3 as usize {
                 let Some(control) = topic.split("/").nth(topic.split("/").count() -1) else {
-                    println!("Could not get 'control' from topic");
+                    eprintln!("Could not get 'control' from topic");
                     continue;
                 };
                 let Some(channel) = topic.split("/").nth(topic.split("/").count() -2) else {
-                    println!("Could not get 'channel' from topic");
+                    eprintln!("Could not get 'channel' from topic");
                     continue;
                 };
                 let Ok(control) = control.parse::<i32>() else {
-                    println!("Could not parse control!");
+                    eprintln!("Could not parse control!");
                     continue;
                 };
                 let Ok(channel) = channel.parse::<i32>() else {
-                    println!("Could not parse channel!");
+                    eprintln!("Could not parse channel!");
                     continue;
                 };
                 let Ok(value) = String::from_utf8(event.payload.to_ascii_lowercase()) else {
-                    println!("Could not parse payload value");
+                    eprintln!("Could not parse payload value");
                     continue;
                 };
                 let Ok(value) = value.parse::<i32>() else {
-                    println!("Could not parse payload value");
+                    eprintln!("Could not parse payload value");
                     continue;
                 };
                 play_midi(channel as u8, control as u8, value as u8);
@@ -145,19 +145,19 @@ async fn daemon_mode() {
             }
             if topic.split("/").count() == 2 as usize {
                 let Some(channel) = topic.split("/").nth(topic.split("/").count() -1) else {
-                    println!("Could not get 'channel' from topic");
+                    eprintln!("Could not get 'channel' from topic");
                     continue;
                 };
                 let Ok(channel) = channel.parse::<i32>() else {
-                    println!("Could not parse channel!");
+                    eprintln!("Could not parse channel!");
                     continue;
                 };
                 let Ok(value) = String::from_utf8(event.payload.to_ascii_lowercase()) else {
-                    println!("Could not parse payload value");
+                    eprintln!("Could not parse payload value");
                     continue;
                 };
                 let Ok(value) = value.parse::<i32>() else {
-                    println!("Could not parse payload value");
+                    eprintln!("Could not parse payload value");
                     continue;
                 };
                 play_midi(channel as u8, value as u8, value as u8);
