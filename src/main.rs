@@ -19,6 +19,7 @@ struct Cli {
     /// List MIDI devices
     #[arg(short='l', long, default_value = "false")]
     list: bool,
+
 }
 
 #[derive(Debug, Deserialize)]
@@ -61,13 +62,12 @@ fn get_config_from_toml() -> Config {
 
 fn list_midi_ports() {
     let Ok(midi_out) = MidiOutput::new("mqtt2midi") else {
-        println!("ERROR: could not query MIDI devices");
+        eprintln!("ERROR: could not query MIDI devices");
         std::process::exit(0x0100);
     };
-
     let out_ports = midi_out.ports();
     if out_ports.len() == 0 {
-        println!("No MIDI output ports found!");
+        eprintln!("No MIDI output ports found!");
         std::process::exit(0x0100);
     };
     println!("\nAvailable output ports:");
@@ -101,7 +101,10 @@ async fn daemon_mode() {
     mqttoptions.set_keep_alive(Duration::from_secs(2));
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-    client.subscribe(&config.mqtt.topic, QoS::AtMostOnce).await.unwrap();
+    let Ok(_) = client.subscribe(&config.mqtt.topic, QoS::AtMostOnce).await else {
+        println!("ERROR: unable to subscribe to topic {}", &config.mqtt.topic);
+        std::process::exit(0x0100);
+    };
     println!("MQTT connected and listening on topic '{}'", config.mqtt.topic);
 
     let mut play_midi = |channel: u8, control: u8, value: u8| {
@@ -137,7 +140,6 @@ async fn daemon_mode() {
                     println!("Could not parse payload value");
                     continue;
                 };
-                //let payload = serde_json::from_slice(&event.payload);
                 play_midi(channel as u8, control as u8, value as u8);
                 println!("CH {} | CC {} | VAL {}", channel, control, value);
             }
@@ -176,6 +178,6 @@ async fn main() {
     } else if cli.list {
         list_midi_ports();
     } else {
-        println!("You should specify list (-l) or daemon (-d) mode")
+        println!("Run 'mqtt2midi --help' for instructions")
     }
 }
