@@ -42,8 +42,8 @@ seq1_prob_16 = 1F
 
 With the configuration detailed above, we can now send messages using MQTT and have them translated to the corresponding MIDI CC messages.
 
-```
-midi/185/10: 127 (turn on the first note in the sequence)
-midi/185/14: 127 (turn on the 5th note in the sequence)
-midi/185/0C: 66 (transpose the entire sequence)
-```
+| Topic | Value | Effect |
+|----|----|----|
+| midi/185/10 | 127 |  turn on the first note in the sequence |
+| midi/185/14 | 127 |  turn on the 5th note in the sequence |
+| midi/185/0C | 66 | transpose the entire sequence |
