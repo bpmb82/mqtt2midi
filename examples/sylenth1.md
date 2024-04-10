@@ -10,7 +10,7 @@ Channel 176 would correspond with channel 1.
 
 ## MIDI control
 
-We can change the below controls by default. 
+We can change the below controls by default. We can also send Program Changes by sending values to the channel directly.
 
 | Parameter name | MIDI CC nr |
 |----|----|
@@ -97,10 +97,11 @@ Comp Release | 127 |
 
 ## MQTT messages
 
-With the configuration detailed above, we can now send messages using MQTT and have them translated to the corresponding MIDI CC messages.
+With the configuration detailed above, we can now send messages using MQTT and have them translated to the corresponding MIDI CC messages or send a Program Change.
 
 | Topic | Value | Effect |
 |----|----|----|
 | midi/185/10 | 127 | Set OSC A1 volume to 127 |
 | midi/185/14 | 127 | Set OSC A1 Pan to 127 |
 | midi/185/84 | 66 | Set LFO 1 Rate to 66 |
+| midi/185 | 10 | Program Change value 10 |
