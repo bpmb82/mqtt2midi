@@ -101,7 +101,7 @@ With the configuration detailed above, we can now send messages using MQTT and h
 
 | Topic | Value | Effect |
 |----|----|----|
-| midi/185/10 | 127 | Set OSC A1 volume to 127 |
-| midi/185/14 | 127 | Set OSC A1 Pan to 127 |
-| midi/185/84 | 66 | Set LFO 1 Rate to 66 |
-| midi/185 | 10 | Program Change value 10 |
+| midi/176/10 | 127 | Set OSC A1 volume to 127 |
+| midi/176/14 | 127 | Set OSC A1 Pan to 127 |
+| midi/176/84 | 66 | Set LFO 1 Rate to 66 |
+| midi/176 | 10 | Program Change value 10 |
