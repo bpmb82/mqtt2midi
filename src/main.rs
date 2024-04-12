@@ -40,13 +40,8 @@ struct Midi {
     port: String
 }
 
-fn get_config_from_toml() -> Config {
-    let Ok(toml_str) = fs::read_to_string("config.toml") else {
-        eprintln!("ERROR: could not read config.toml file, this file needs to exist next to the executable.");
-        std::process::exit(0x0100);
-    };
-    let Ok(config) = toml::from_str(&toml_str) else {
-        eprintln!("ERROR: could not parse config.toml file.
+fn print_help(msg: &str) {
+    eprintln!("{}
         
     Example config.toml:
 
@@ -54,7 +49,16 @@ fn get_config_from_toml() -> Config {
     host = '127.0.0.1'
     port = 1883
     [midi]
-    port = 'MIDI Out 1'");
+    port = 'MIDI Out 1'", msg);
+}
+
+fn get_config_from_toml() -> Config {
+    let Ok(toml_str) = fs::read_to_string("config.toml") else {
+        print_help("ERROR: could not read config.toml file, this file needs to exist next to the executable.");
+        std::process::exit(0x0100);
+    };
+    let Ok(config) = toml::from_str(&toml_str) else {
+        print_help("ERROR: could not parse config.toml file.");
         std::process::exit(0x0100);
     };
     config
@@ -78,9 +82,9 @@ fn list_midi_ports() {
 }
 
 async fn daemon_mode() {
-    println!("We are running in daemon mode!");
+    println!("INFO: running in daemon mode");
     let config = get_config_from_toml();
-    println!("Config file found and loaded");
+    println!("INFO: Config file found and loaded");
     let Ok(midi_out) = MidiOutput::new("mqtt2midi") else {
         eprintln!("ERROR: could not query MIDI devices");
         std::process::exit(0x0100);
@@ -96,7 +100,7 @@ async fn daemon_mode() {
         eprintln!("ERROR: could not open MIDI port {}", config.midi.port);
         std::process::exit(0x0100);
     };
-    println!("MIDI port connected: {}", config.midi.port);
+    println!("INFO: MIDI port connected: {}", config.midi.port);
     let mut mqttoptions = MqttOptions::new("mqtt2midi", config.mqtt.host, config.mqtt.port as u16);
     mqttoptions.set_keep_alive(Duration::from_secs(2));
 
@@ -105,7 +109,7 @@ async fn daemon_mode() {
         eprintln!("ERROR: unable to subscribe to topic {}", &config.mqtt.topic);
         std::process::exit(0x0100);
     };
-    println!("MQTT connected and listening on topic '{}'", config.mqtt.topic);
+    println!("INFO: MQTT connected and listening on topic '{}'", config.mqtt.topic);
 
     let mut play_midi = |channel: u8, control: u8, value: u8| {
         let _ = conn_out.send(&[channel, control, value]);
@@ -117,27 +121,27 @@ async fn daemon_mode() {
             let topic = String::from(&event.topic);
             if topic.split("/").count() >= 3 as usize {
                 let Some(control) = topic.split("/").nth(topic.split("/").count() -1) else {
-                    eprintln!("Could not get 'control' from topic");
+                    eprintln!("ERROR: Could not get 'control' from topic");
                     continue;
                 };
                 let Some(channel) = topic.split("/").nth(topic.split("/").count() -2) else {
-                    eprintln!("Could not get 'channel' from topic");
+                    eprintln!("ERROR: Could not get 'channel' from topic");
                     continue;
                 };
                 let Ok(control) = control.parse::<i32>() else {
-                    eprintln!("Could not parse control!");
+                    eprintln!("ERROR: Could not parse control!");
                     continue;
                 };
                 let Ok(channel) = channel.parse::<i32>() else {
-                    eprintln!("Could not parse channel!");
+                    eprintln!("ERROR: Could not parse channel!");
                     continue;
                 };
                 let Ok(value) = String::from_utf8(event.payload.to_ascii_lowercase()) else {
-                    eprintln!("Could not parse payload value");
+                    eprintln!("ERROR: Could not parse payload value");
                     continue;
                 };
                 let Ok(value) = value.parse::<i32>() else {
-                    eprintln!("Could not parse payload value");
+                    eprintln!("ERROR: Could not parse payload value");
                     continue;
                 };
                 play_midi(channel as u8, control as u8, value as u8);
@@ -145,19 +149,19 @@ async fn daemon_mode() {
             }
             if topic.split("/").count() == 2 as usize {
                 let Some(channel) = topic.split("/").nth(topic.split("/").count() -1) else {
-                    eprintln!("Could not get 'channel' from topic");
+                    eprintln!("ERROR: Could not get 'channel' from topic");
                     continue;
                 };
                 let Ok(channel) = channel.parse::<i32>() else {
-                    eprintln!("Could not parse channel!");
+                    eprintln!("ERROR: Could not parse channel!");
                     continue;
                 };
                 let Ok(value) = String::from_utf8(event.payload.to_ascii_lowercase()) else {
-                    eprintln!("Could not parse payload value");
+                    eprintln!("ERROR: Could not parse payload value");
                     continue;
                 };
                 let Ok(value) = value.parse::<i32>() else {
-                    eprintln!("Could not parse payload value");
+                    eprintln!("ERROR: Could not parse payload value");
                     continue;
                 };
                 play_midi(channel as u8, value as u8, value as u8);
@@ -172,7 +176,7 @@ async fn main() {
     let cli = Cli::parse();
     
     if cli.daemon && cli.list {
-        println!("Cannot run in daemon and list mode simultaneously")
+        println!("ERROR: Cannot run in daemon and list mode simultaneously")
     } else if cli.daemon {
         daemon_mode().await;
     } else if cli.list {
