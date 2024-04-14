@@ -105,7 +105,7 @@ async fn daemon_mode() {
     mqttoptions.set_keep_alive(Duration::from_secs(2));
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-    let Ok(_) = client.subscribe(&config.mqtt.topic, QoS::AtMostOnce).await else {
+    let Ok(_) = client.subscribe(&config.mqtt.topic, QoS::AtLeastOnce).await else {
         eprintln!("ERROR: unable to subscribe to topic {}", &config.mqtt.topic);
         std::process::exit(0x0100);
     };
@@ -183,5 +183,5 @@ async fn main() {
         list_midi_ports();
     } else {
         println!("Run 'mqtt2midi --help' for instructions")
-    }
+    };
 }
