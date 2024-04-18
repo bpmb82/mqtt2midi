@@ -42,25 +42,28 @@ struct Midi {
     port: String
 }
 
-fn print_help(msg: &str) {
-    eprintln!("{}
-        
-    Example config.toml:
+fn print_config_help(msg: &str) {
+    println!("{}
 
-    [mqtt]
-    host = '127.0.0.1'
-    port = 1883
-    [midi]
-    port = 'MIDI Out 1'", msg);
+Example config.toml:
+
+[mqtt]
+host = '127.0.0.1'
+port = 1883
+qos = 0
+topic = 'example/topic/#'
+
+[midi]
+port = 'MIDI Out 1'", msg)
 }
 
 fn get_config_from_toml() -> Config {
     let Ok(toml_str) = fs::read_to_string("config.toml") else {
-        print_help("ERROR: could not read config.toml file, this file needs to exist next to the executable.");
+        print_config_help("ERROR: could not read config.toml file, this file needs to exist next to the executable.");
         std::process::exit(0x0100);
     };
     let Ok(config) = toml::from_str(&toml_str) else {
-        print_help("ERROR: could not parse config.toml file.");
+        print_config_help("ERROR: could not parse config.toml file. You can find the MIDI port by passing the '-l' option.");
         std::process::exit(0x0100);
     };
     config
