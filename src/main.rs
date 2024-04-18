@@ -4,6 +4,7 @@ use std::fs;
 use clap::Parser;
 use tokio;
 use tokio::time::Duration;
+use in_range::in_range;
 
 use midir::{MidiOutput, MidiOutputPort};
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
@@ -32,7 +33,8 @@ struct Config {
 struct Mqtt {
     host: String,
     port: i32,
-    topic: String
+    topic: String,
+    qos: i32
 }
 
 #[derive(Debug, Deserialize)]
@@ -46,18 +48,30 @@ fn get_config_from_toml() -> Config {
         std::process::exit(0x0100);
     };
     let Ok(config) = toml::from_str(&toml_str) else {
-        eprintln!("ERROR: could not parse config.toml file.
-        
-    Example config.toml:
+        eprintln!("ERROR: could not parse config.toml file. You can find the MIDI port by passing the '-l' option.
+    
+Example config.toml:
 
-    [mqtt]
-    host = '127.0.0.1'
-    port = 1883
-    [midi]
-    port = 'MIDI Out 1'");
+[mqtt]
+host = '127.0.0.1'
+port = 1883
+qos = 0
+topic = 'example/topic/#'
+
+[midi]
+port = 'MIDI Out 1'");
         std::process::exit(0x0100);
     };
     config
+}
+
+fn get_qos(qos: i32) -> QoS {
+    match qos {
+        0 => QoS::AtMostOnce,
+        1 => QoS::AtLeastOnce,
+        2 => QoS::ExactlyOnce,
+        _ => panic!("Invalid QoS value, needs to be a value of 0, 1 or 2"),
+    }
 }
 
 fn list_midi_ports() {
@@ -78,8 +92,8 @@ fn list_midi_ports() {
 }
 
 async fn daemon_mode() {
-    println!("We are running in daemon mode!");
     let config = get_config_from_toml();
+    println!("Running in daemon mode");
     println!("Config file found and loaded");
     let Ok(midi_out) = MidiOutput::new("mqtt2midi") else {
         eprintln!("ERROR: could not query MIDI devices");
@@ -101,7 +115,7 @@ async fn daemon_mode() {
     mqttoptions.set_keep_alive(Duration::from_secs(2));
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-    let Ok(_) = client.subscribe(&config.mqtt.topic, QoS::AtMostOnce).await else {
+    let Ok(_) = client.subscribe(&config.mqtt.topic, get_qos(config.mqtt.qos)).await else {
         eprintln!("ERROR: unable to subscribe to topic {}", &config.mqtt.topic);
         std::process::exit(0x0100);
     };
@@ -140,8 +154,12 @@ async fn daemon_mode() {
                     eprintln!("Could not parse payload value");
                     continue;
                 };
-                play_midi(channel as u8, control as u8, value as u8);
-                println!("CH {} | CC {} | VAL {}", channel, control, value);
+                if in_range(value, 0, 127) {
+                    play_midi(channel as u8, control as u8, value as u8);
+                    println!("CH {} | CC {} | VAL {}", channel, control, value);
+                } else {
+                    eprintln!("Control value out of bounds, keep value between 0-127")
+                }
             }
             if topic.split("/").count() == 2 as usize {
                 let Some(channel) = topic.split("/").nth(topic.split("/").count() -1) else {
@@ -160,8 +178,12 @@ async fn daemon_mode() {
                     eprintln!("Could not parse payload value");
                     continue;
                 };
-                play_midi(channel as u8, value as u8, value as u8);
-                println!("CH {} | PC {}", channel, &value);
+                if in_range(value, 0,127) {
+                    play_midi(channel as u8, value as u8, value as u8);
+                    println!("CH {} | PC {}", channel, &value);
+                } else {
+                    eprintln!("Control value out of bounds, keep value between 0-127")
+                }
             }
         }
     }
