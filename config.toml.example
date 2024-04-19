@@ -1,0 +1,8 @@
+[mqtt]
+host = "127.0.0.1"
+port = 1883
+topic = "midi/#"
+qos = 0
+
+[midi]
+port = "MIDI"
