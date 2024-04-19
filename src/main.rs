@@ -202,5 +202,5 @@ async fn main() {
         list_midi_ports();
     } else {
         println!("Run 'mqtt2midi --help' for instructions")
-    }
+    };
 }
