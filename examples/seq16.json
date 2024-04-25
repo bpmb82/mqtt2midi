@@ -1,0 +1,65 @@
+[
+    {
+        "name": "transpose",
+        "topic": "9",
+        "step_size": 6,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step01",
+        "topic": "10",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step02",
+        "topic": "12",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step03",
+        "topic": "14",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step04",
+        "topic": "16",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step05",
+        "topic": "18",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step06",
+        "topic": "20",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step07",
+        "topic": "22",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    },
+    {
+        "name": "step08",
+        "topic": "24",
+        "step_size": 127,
+        "min": 0,
+        "max": 127
+    }
+]
