@@ -1,8 +1,6 @@
 {
   "mqtt": {
-      "host": "192.168.1.78",
-      "username": "beatpi",
-      "password": "BeatPi2024!"
+      "host": "192.168.1.78"
   },
   "buttons": [
     {
@@ -10,7 +8,11 @@
         "topic": "176/7",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 17,
+            "b": 18
+        }
     },
     {
         "name": "osc1_phase",
@@ -19,8 +21,8 @@
         "min": 0,
         "max": 127,
         "gpio": {
-          "a": 17,
-          "b": 18
+          "a": 5,
+          "b": 6
         }
     },
     {
@@ -28,14 +30,22 @@
         "topic": "177/10",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 12,
+            "b": 20
+        }
     },
     {
         "name": "osc1_detune",
         "topic": "176/12",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 16,
+            "b": 19
+        }
     },
     {
         "name": "amp_attack",
@@ -88,31 +98,47 @@
     },
     {
         "name": "filter_cutoff",
-        "topic": "176/67",
+        "topic": "176/72",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 22,
+            "b": 23
+        }
     },
     {
         "name": "filter_resonance",
         "topic": "176/69",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 4,
+            "b": 27
+        }
     },
     {
         "name": "filter_drive",
-        "topic": "176/72",
+        "topic": "176/67",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 21,
+            "b": 13
+        }
     },
     {
         "name": "filter_type",
-        "topic": "177/12",
+        "topic": "177/16",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 10,
+            "b": 9
+        }
     },
     {
         "name": "filter_ctrl_cutoff",
@@ -133,28 +159,44 @@
         "topic": "176/84",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 11,
+            "b": 8
+        }
     },
     {
         "name": "lfo1_gain",
         "topic": "176/85",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 7,
+            "b": 26
+        }
     },
     {
         "name": "lfo1_waveform",
-        "topic": "177/13",
+        "topic": "177/12",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 2,
+            "b": 3
+        }
     },
     {
         "name": "lfo1_parameter",
         "topic": "177/14",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 14,
+            "b": 15
+        }
     },
     {
         "name": "lfo2_rate",
@@ -172,14 +214,14 @@
     },
     {
         "name": "lfo2_waveform",
-        "topic": "177/15",
+        "topic": "177/13",
         "step_size": 1,
         "min": 0,
         "max": 127
     },
     {
         "name": "lfo2_parameter",
-        "topic": "177/16",
+        "topic": "177/15",
         "step_size": 1,
         "min": 0,
         "max": 127
@@ -189,7 +231,11 @@
         "topic": "176",
         "step_size": 1,
         "min": 0,
-        "max": 127
+        "max": 127,
+        "gpio": {
+            "a": 24,
+            "b": 25
+        }
     }
   ]
 }
