@@ -19,14 +19,14 @@ jobs:
             target: x86_64-unknown-linux-gnu
             artifact_name: ${{ github.event.repository.name }}-linux-amd64.tar.gz
 #            asset_name: ${{ github.event.repository.name }}-linux-amd64
-            asset_extension: ".exe"
+            asset_extension: ""
             compression_type: tar
           - name: win-amd64
             runner: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: ${{ github.event.repository.name }}-windows-amd64.zip
 #            asset_name: ${{ github.event.repository.name }}-windows-amd64
-            asset_extension: ""
+            asset_extension: ".exe"
             compression_type: zip
           - name: macos-amd64
             runner: macos-latest
