@@ -34,7 +34,9 @@ struct Mqtt {
     host: String,
     port: i32,
     topic: String,
-    qos: i32
+    qos: i32,
+    username: Option<String>,
+    password: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
@@ -52,6 +54,8 @@ host = '127.0.0.1'
 port = 1883
 qos = 0
 topic = 'example/topic/#'
+username = 'username' (optional)
+password = 'password' (optional)
 
 [midi]
 port = 'MIDI Out 1'", msg)
@@ -115,8 +119,15 @@ async fn daemon_mode() {
         std::process::exit(0x0100);
     };
     println!("INFO: MIDI port connected: {}", config.midi.port);
+
     let mut mqttoptions = MqttOptions::new("mqtt2midi", config.mqtt.host, config.mqtt.port as u16);
-    mqttoptions.set_keep_alive(Duration::from_secs(2));
+    mqttoptions.set_keep_alive(Duration::from_secs(5));
+
+    if let Some(username) = config.mqtt.username {
+        if let Some(password) = config.mqtt.password {
+            mqttoptions.set_credentials(username, password);
+        }
+    }
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     let Ok(_) = client.subscribe(&config.mqtt.topic, get_qos(config.mqtt.qos)).await else {

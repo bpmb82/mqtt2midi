@@ -12,6 +12,8 @@ _Example config.toml_
 host = "192.168.1.250"
 port = 1883
 topic = "midi/#"
+username: "username" (optional)
+password: "password" (optional)
 
 [midi]
 port = "MIDI Out 1"
