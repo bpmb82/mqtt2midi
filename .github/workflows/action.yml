@@ -95,10 +95,10 @@ jobs:
     #       fi
 
       - name: Archive Release
-        uses: thedoctor0/zip-release@0.7.5
+        uses: thedoctor0/zip-release@0.7.6
         with:
           type: ${{ matrix.compression_type }}
-          directory: target/release/
+          directory: target/${{ matrix.target }}/release/
           path: ${{ github.event.repository.name }}${{ matrix.asset_extension }}
           filename: '${{ matrix.artifact_name }}'
 
@@ -106,7 +106,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           name: ${{ steps.tag.outputs.tag }}
-          artifacts: target/${{ matrix.artifact_name }}
+          artifacts: target/release/${{ matrix.target }}/${{ matrix.artifact_name }}
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
