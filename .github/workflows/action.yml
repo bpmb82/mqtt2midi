@@ -47,6 +47,12 @@ jobs:
         id: tag
         uses: devops-actions/action-get-tag@v1.0.3
 
+      - name: Install dependencies if target is Linux
+        shell: bash
+        run: |
+          apt update && apt install -y gcc curl libasound2-dev libasound2 openssl pkg-config
+        if: ${{ matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu' }}
+
       - name: Checkout
         uses: actions/checkout@v3
  
