@@ -77,23 +77,18 @@ jobs:
  
           # The built binary output location
           BIN_OUTPUT="target/${{ matrix.target }}/release/${{ github.event.repository.name }}${BIN_SUFFIX}"
-
-          # Create output folder
-          mkdir -p /output
  
           # Define a better name for the final binary
           BIN_RELEASE="${{ github.event.repository.name }}-${{ matrix.name }}${BIN_SUFFIX}"
           BIN_RELEASE_VERSIONED="${{ github.event.repository.name }}-${{ steps.tag.outputs.tag }}-${{ matrix.name }}"
  
           # Move the built binary where you want it
-          mv "${BIN_OUTPUT}" "/tmp/${BIN_RELEASE}"
-          cd /tmp
+          mv "${BIN_OUTPUT}" "target/${BIN_RELEASE}"
+          cd target
           if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
             zip ${{ matrix.artifact_name }} ${BIN_RELEASE}
-            mv ${{ matrix.artifact_name }} /output
           else
             tar -czvf ${{ matrix.artifact_name }} ${BIN_RELEASE}
-            mv ${{ matrix.artifact_name }} /output
           fi
 
       - name: release
@@ -111,7 +106,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /output/${{ matrix.artifact_name }}
+          file: target/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ steps.tag.outputs.tag }}
         
