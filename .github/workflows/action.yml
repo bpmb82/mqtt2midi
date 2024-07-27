@@ -18,22 +18,30 @@ jobs:
             runner: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact_name: ${{ github.event.repository.name }}-linux-amd64.tar.gz
-            asset_name: ${{ github.event.repository.name }}-linux-amd64
+#            asset_name: ${{ github.event.repository.name }}-linux-amd64
+            asset_extension: ".exe"
+            compression_type: tar
           - name: win-amd64
             runner: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: ${{ github.event.repository.name }}-windows-amd64.zip
-            asset_name: ${{ github.event.repository.name }}-windows-amd64
+#            asset_name: ${{ github.event.repository.name }}-windows-amd64
+            asset_extension: ""
+            compression_type: zip
           - name: macos-amd64
             runner: macos-latest
             target: x86_64-apple-darwin
             artifact_name: ${{ github.event.repository.name }}-macos-amd64.tar.gz
-            asset_name: ${{ github.event.repository.name }}-macos-amd64
+#            asset_name: ${{ github.event.repository.name }}-macos-amd64
+            asset_extension: ""
+            compression_type: tar
           - name: macos-arm64
             runner: macos-latest
             target: aarch64-apple-darwin
             artifact_name: ${{ github.event.repository.name }}-macos-aarch64.tar.gz
-            asset_name: ${{ github.event.repository.name }}-macos-aarch64
+#            asset_name: ${{ github.event.repository.name }}-macos-aarch64
+            asset_extension: ""
+            compression_type: tar
  
     # The steps to run for each matrix item
     steps:
@@ -62,36 +70,44 @@ jobs:
       - name: Build Binary
         run: cargo build --verbose --release --target ${{ matrix.target }}
  
-      - name: Release Binary
-        shell: bash
-        run: |
-          BIN_SUFFIX=""
-          if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
-            BIN_SUFFIX=".exe"
-          fi
+    #   - name: Release Binary
+    #     shell: bash
+    #     run: |
+    #       BIN_SUFFIX=""
+    #       if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
+    #         BIN_SUFFIX=".exe"
+    #       fi
  
-          # The built binary output location
-          BIN_OUTPUT="target/${{ matrix.target }}/release/${{ github.event.repository.name }}${BIN_SUFFIX}"
+    #       # The built binary output location
+    #       BIN_OUTPUT="target/${{ matrix.target }}/release/${{ github.event.repository.name }}${BIN_SUFFIX}"
  
-          # Define a better name for the final binary
-          BIN_RELEASE="${{ github.event.repository.name }}-${{ matrix.name }}${BIN_SUFFIX}"
-          BIN_RELEASE_VERSIONED="${{ github.event.repository.name }}-${{ steps.tag.outputs.tag }}-${{ matrix.name }}"
+    #       # Define a better name for the final binary
+    #       BIN_RELEASE="${{ github.event.repository.name }}-${{ matrix.name }}${BIN_SUFFIX}"
+    #       BIN_RELEASE_VERSIONED="${{ github.event.repository.name }}-${{ steps.tag.outputs.tag }}-${{ matrix.name }}"
  
-          # Move the built binary where you want it
-          mv "${BIN_OUTPUT}" "target/${BIN_RELEASE}"
-          cd target
-          if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
-            zip ${{ matrix.artifact_name }} ${BIN_RELEASE}
-          else
-            tar -czvf ${{ matrix.artifact_name }} ${BIN_RELEASE}
-          fi
+    #       # Move the built binary where you want it
+    #       mv "${BIN_OUTPUT}" "target/${BIN_RELEASE}"
+    #       cd target
+    #       if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
+    #         zip ${{ matrix.artifact_name }} ${BIN_RELEASE}
+    #       else
+    #         tar -czvf ${{ matrix.artifact_name }} ${BIN_RELEASE}
+    #       fi
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: ${{ matrix.compression_type }}
+          directory: target/release/
+          path: ${{ github.event.repository.name }}${{ matrix.asset_extension }}
+          filename: '${{ matrix.artifact_name }}'
 
       - name: Create Github Release
         uses: ncipollo/release-action@v1
         with:
           name: ${{ steps.tag.outputs.tag }}
           artifacts: target/${{ matrix.artifact_name }}
-          replacesArtifacts: false
+          replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
       
