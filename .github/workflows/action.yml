@@ -7,10 +7,8 @@ on:
 
 jobs:
   build:
-    # Set the job to run on the platform specified by the matrix below
     runs-on: ${{ matrix.runner }}
  
-    # Define the build matrix for cross-compilation
     strategy:
       matrix:
         include:
@@ -18,32 +16,27 @@ jobs:
             runner: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact_name: ${{ github.event.repository.name }}-linux-amd64.tar.gz
-#            asset_name: ${{ github.event.repository.name }}-linux-amd64
             asset_extension: ""
             compression_type: tar
           - name: win-amd64
             runner: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: ${{ github.event.repository.name }}-windows-amd64.zip
-#            asset_name: ${{ github.event.repository.name }}-windows-amd64
             asset_extension: ".exe"
             compression_type: zip
           - name: macos-amd64
             runner: macos-latest
             target: x86_64-apple-darwin
             artifact_name: ${{ github.event.repository.name }}-macos-amd64.tar.gz
-#            asset_name: ${{ github.event.repository.name }}-macos-amd64
             asset_extension: ""
             compression_type: tar
           - name: macos-arm64
             runner: macos-latest
             target: aarch64-apple-darwin
             artifact_name: ${{ github.event.repository.name }}-macos-aarch64.tar.gz
-#            asset_name: ${{ github.event.repository.name }}-macos-aarch64
             asset_extension: ""
             compression_type: tar
  
-    # The steps to run for each matrix item
     steps:
 
       - name: Get tag
@@ -69,30 +62,6 @@ jobs:
  
       - name: Build Binary
         run: cargo build --verbose --release --target ${{ matrix.target }}
- 
-    #   - name: Release Binary
-    #     shell: bash
-    #     run: |
-    #       BIN_SUFFIX=""
-    #       if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
-    #         BIN_SUFFIX=".exe"
-    #       fi
- 
-    #       # The built binary output location
-    #       BIN_OUTPUT="target/${{ matrix.target }}/release/${{ github.event.repository.name }}${BIN_SUFFIX}"
- 
-    #       # Define a better name for the final binary
-    #       BIN_RELEASE="${{ github.event.repository.name }}-${{ matrix.name }}${BIN_SUFFIX}"
-    #       BIN_RELEASE_VERSIONED="${{ github.event.repository.name }}-${{ steps.tag.outputs.tag }}-${{ matrix.name }}"
- 
-    #       # Move the built binary where you want it
-    #       mv "${BIN_OUTPUT}" "target/${BIN_RELEASE}"
-    #       cd target
-    #       if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
-    #         zip ${{ matrix.artifact_name }} ${BIN_RELEASE}
-    #       else
-    #         tar -czvf ${{ matrix.artifact_name }} ${BIN_RELEASE}
-    #       fi
 
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.6
@@ -111,23 +80,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
       
-
-    #   - name: release
-    #     uses: actions/create-release@v1
-    #     id: create_release
-    #     with:
-    #       draft: false
-    #       prerelease: false
-    #       release_name: ${{ steps.tag.outputs.tag }}
-    #       tag_name: ${{ steps.tag.outputs.tag }}
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    #   - name: Upload binaries to release
-    #     uses: svenstaro/upload-release-action@v2
-    #     with:
-    #       repo_token: ${{ secrets.GITHUB_TOKEN }}
-    #       file: target/${{ matrix.artifact_name }}
-    #       asset_name: ${{ matrix.asset_name }}
-    #       tag: ${{ steps.tag.outputs.tag }}
-        
