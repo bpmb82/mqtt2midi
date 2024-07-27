@@ -106,7 +106,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           name: ${{ steps.tag.outputs.tag }}
-          artifacts: target/release/${{ matrix.target }}/${{ matrix.artifact_name }}
+          artifacts: target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
