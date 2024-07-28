@@ -79,5 +79,5 @@ jobs:
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
-          bodyFile: "CHANGELOG.md"
+          bodyFile: ${{ github.workspace }}/CHANGELOG.md
       
